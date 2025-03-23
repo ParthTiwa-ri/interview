@@ -1,7 +1,7 @@
 "use client";
 
 import { useInterviewContext } from "../context/InterviewContext";
-
+import { useUser } from "@clerk/nextjs";
 const JobRoleSelection = () => {
   const { 
     jobRole, 
@@ -11,6 +11,8 @@ const JobRoleSelection = () => {
     error, 
     dummyUserName 
   } = useInterviewContext();
+
+  const { user } = useUser();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -24,12 +26,12 @@ const JobRoleSelection = () => {
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                 <span className="text-blue-600 font-semibold">
-                  {dummyUserName.charAt(0)}
+                  {user?.firstName?.charAt(0)}
                 </span>
               </div>
               <div className="text-right">
                 <div className="text-sm text-gray-500">Logged in as</div>
-                <div className="font-medium text-gray-900">{dummyUserName}</div>
+                <div className="font-medium text-gray-900">{user?.firstName}</div>
               </div>
             </div>
           </div>

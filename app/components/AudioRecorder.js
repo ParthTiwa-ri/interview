@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useInterviewContext } from "../context/InterviewContext";
+import { Mic } from 'lucide-react';
 
 const AudioRecorder = ({ questionId, onAnswerChange }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -84,9 +85,7 @@ const AudioRecorder = ({ questionId, onAnswerChange }) => {
               <div className="w-3 h-3 bg-white rounded-full animate-pulse mr-2"></div>
               Stop Recording
             </div>
-          ) : (
-            "Start Recording"
-          )}
+          ) : <div className="flex items-center gap-2"><Mic size={20}/>Start Recording</div>}
         </button>
       </div>
 
