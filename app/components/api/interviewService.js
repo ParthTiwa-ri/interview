@@ -4,35 +4,49 @@ import { HfInference } from "@huggingface/inference";
 import { saveInterviewFeedback } from "../../../actions/action";
 
 // Service for generating interview questions
-export const generateInterviewQuestions = async (jobRole) => {
+export const generateInterviewQuestions = async (jobRole, experienceLevel = "Mid-Level", industry = "Technology", company = "") => {
   try {
     const client = new HfInference(process.env.NEXT_PUBLIC_HF_TOKEN);
+
+    // Create the prompt with specific company info if provided
+    let companySpecificContent = "";
+    if (company) {
+      companySpecificContent = `The candidate is interviewing at ${company}. Include questions that reflect ${company}'s known interview style and company values.`;
+    }
 
     const chatCompletion = await client.chatCompletion({
       model: "mistralai/Mistral-7B-Instruct-v0.2",
       messages: [
         {
           role: "user",
-          content: `Generate 1 mock interview questions for a ${jobRole} position. 
+          content: `Generate 1 realistic mock interview questions for a ${experienceLevel} ${jobRole} position in the ${industry} industry.
+
+The questions should match the real-world expectations for a ${experienceLevel} candidate in this role and industry.
+${companySpecificContent}
+
+Include a mix of:
+- Technical questions specific to the ${jobRole} role
+- Behavioral questions relevant to ${experienceLevel} professionals
+- Problem-solving scenarios a ${jobRole} would face in their daily work in the ${industry} industry
+- Industry-specific knowledge questions relevant to ${industry}
           
-          
-    Format your response EXACTLY as a JSON array with each object having 'id' and 'question' fields like this example:
-    [
-      {
-        "id": 1,
-        "question": "Can you describe your experience with object-oriented programming and design principles? How have you applied these concepts in your past projects?"
-      },
-      {
-        "id": 2,
-        "question": "Tell me about a time when you had to troubleshoot and resolve a complex coding issue. What steps did you take to diagnose the problem and what was the outcome?"
-      }
-    ]
-    
-    Return ONLY the JSON array with no additional text, explanation, or formatting.`,
+Format your response EXACTLY as a JSON array with each object having 'id' and 'question' fields like this example:
+[
+  {
+    "id": 1,
+    "question": "Can you describe your experience with object-oriented programming and design principles? How have you applied these concepts in your past projects?"
+  },
+  {
+    "id": 2,
+    "question": "Tell me about a time when you had to troubleshoot and resolve a complex coding issue. What steps did you take to diagnose the problem and what was the outcome?"
+  }
+]
+
+Return ONLY the JSON array with no additional text, explanation, or formatting.`,
         },
       ],
       provider: "hf-inference",
-      max_tokens: 500,
+      max_tokens: 800,
     });
 
     // Extract the response content
@@ -70,13 +84,27 @@ export const generateInterviewQuestions = async (jobRole) => {
 };
 
 // Service for generating interview feedback
-export const generateInterviewFeedback = async (jobRole, questions, answers) => {
+export const generateInterviewFeedback = async (
+  jobRole, 
+  questions, 
+  answers, 
+  experienceLevel = "Mid-Level", 
+  industry = "Technology", 
+  company = ""
+) => {
   try {
     const client = new HfInference(process.env.NEXT_PUBLIC_HF_TOKEN);
 
+    // Add company-specific context if provided
+    let companyContext = "";
+    if (company) {
+      companyContext = `The candidate is interviewing at ${company}. Evaluate their answers based on what would be expected at this company.`;
+    }
+
     // Create a batch prompt for all questions and answers
     const batchPrompt = `
-I need feedback on the following job interview for a ${jobRole} position:
+I need feedback on the following job interview for a ${experienceLevel} ${jobRole} position in the ${industry} industry.
+${companyContext}
 
 ${questions
   .map(
@@ -87,11 +115,12 @@ Candidate Answer: "${answers[q.id]}"
   )
   .join("\n")}
 
-For each question, rate the answer from 1-10 based on:
+For each question, rate the answer from 1-10 based on expectations for a ${experienceLevel} candidate in the ${industry} industry, considering:
 - Relevance to the question
 - Technical accuracy
 - Communication clarity
-- Depth of knowledge
+- Depth of knowledge appropriate for a ${experienceLevel} ${jobRole}
+- Industry-specific awareness and knowledge
 
 Return a JSON object with the following structure:
 {
@@ -115,7 +144,8 @@ Return a JSON object with the following structure:
     "averageScore": 7.5,
     "generalFeedback": "Overall assessment of the candidate",
     "keyStrengths": ["Key strength 1", "Key strength 2"],
-    "developmentAreas": ["Development area 1", "Development area 2"]
+    "developmentAreas": ["Development area 1", "Development area 2"],
+    "hiringRecommendation": "Would recommend hiring for a ${experienceLevel} ${jobRole} position at ${company || 'a company'} in the ${industry} industry"
   }
 }
 
@@ -173,7 +203,7 @@ Only return the JSON object, no other text.
 };
 
 // Service for saving interview to database
-export const saveInterview = async (userId, jobRole, questions, answers, scores) => {
+export const saveInterview = async (userId, jobRole, questions, answers, scores, industry = "Technology", company = "") => {
   try {
     const data = await saveInterviewFeedback({
       userId,
@@ -181,6 +211,8 @@ export const saveInterview = async (userId, jobRole, questions, answers, scores)
       questions,
       answers,
       scores,
+      industry,
+      company
     });
 
     if (data.success) {

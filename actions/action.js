@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 export async function saveInterviewFeedback(data) {
   try {
-    const { jobRole, questions, answers, scores, userId } = data;
+    const { jobRole, questions, answers, scores, userId, industry = "Technology", company = "" } = data;
 
     // Calculate total score
     let totalScoreSum = 0;
@@ -32,6 +32,8 @@ export async function saveInterviewFeedback(data) {
         jobRole,
         totalScore,
         userId,
+        industry,
+        company,
         questionResponses: {
           create: questions.map((question) => ({
             questionId: String(question.id), // Convert to string

@@ -24,6 +24,8 @@ model InterviewSession {
   id             String            @id @default(uuid())
   jobRole        String
   totalScore     Float?
+  industry       String            @default("Technology")
+  company        String            @default("")
   user           User              @relation(fields: [userId], references: [id])
   userId         String
   questionResponses QuestionResponse[]

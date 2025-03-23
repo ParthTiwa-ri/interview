@@ -53,7 +53,7 @@ export const useInterview = () => {
     syncUser();
   }, [isLoaded, isSignedIn, user]);
 
-  const startInterview = async () => {
+  const startInterview = async (experienceLevel = "Mid-Level", industry = "Technology", company = "") => {
     if (!jobRole.trim()) {
       setError("Please enter a job role");
       return;
@@ -63,7 +63,7 @@ export const useInterview = () => {
     setError(null);
 
     try {
-      const result = await generateInterviewQuestions(jobRole);
+      const result = await generateInterviewQuestions(jobRole, experienceLevel, industry, company);
       
       if (result.success) {
         setQuestions(result.questions);
@@ -128,8 +128,23 @@ export const useInterview = () => {
     setError(null);
 
     try {
+      // Get the stored parameters from localStorage if available
+      const storedExperienceLevel = typeof window !== 'undefined' ? 
+        localStorage.getItem('experienceLevel') || 'Mid-Level' : 'Mid-Level';
+      const storedIndustry = typeof window !== 'undefined' ? 
+        localStorage.getItem('industry') || 'Technology' : 'Technology';
+      const storedCompany = typeof window !== 'undefined' ? 
+        localStorage.getItem('company') || '' : '';
+      
       // Generate feedback
-      const feedbackResult = await generateInterviewFeedback(jobRole, questions, answers);
+      const feedbackResult = await generateInterviewFeedback(
+        jobRole, 
+        questions, 
+        answers, 
+        storedExperienceLevel,
+        storedIndustry,
+        storedCompany
+      );
       
       if (feedbackResult.success) {
         setScores(feedbackResult.scores);
@@ -169,6 +184,12 @@ export const useInterview = () => {
         }
       }
       
+      // Get the stored parameters from localStorage if available
+      const storedIndustry = typeof window !== 'undefined' ? 
+        localStorage.getItem('industry') || 'Technology' : 'Technology';
+      const storedCompany = typeof window !== 'undefined' ? 
+        localStorage.getItem('company') || '' : '';
+      
       // Use the database user ID for saving
       const userId = dbUserId || "anonymous";
 
@@ -177,7 +198,9 @@ export const useInterview = () => {
         jobRole,
         questions,
         answers,
-        finalScores
+        finalScores,
+        storedIndustry,
+        storedCompany
       );
 
       if (result.success) {
