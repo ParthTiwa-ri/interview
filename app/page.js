@@ -1,18 +1,29 @@
 "use client";
 
-import { createUser } from "../actions/action";
+import { InterviewProvider } from "./context/InterviewContext";
+import JobRoleSelection from "./components/JobRoleSelection";
+import InterviewQuestions from "./components/InterviewQuestions";
+import ResultsSummary from "./components/ResultsSummary";
+import { useInterviewContext } from "./context/InterviewContext";
 
-function Page() {
-  async function handleClick() {
-    const data = await createUser({ email: "nwe@gmail.com", name: "nwe" });
-    console.log(data);
-  }
+// Inner component that uses the context
+const InterviewContent = () => {
+  const { currentStep } = useInterviewContext();
 
   return (
-    <div>
-      <button onClick={handleClick}>Click me</button>
+    <div className="pt-4">
+      {currentStep === "role" && <JobRoleSelection />}
+      {currentStep === "questions" && <InterviewQuestions />}
+      {currentStep === "summary" && <ResultsSummary />}
     </div>
   );
-}
+};
 
-export default Page;
+// Main page component that provides the context
+export default function HomePage() {
+  return (
+    <InterviewProvider>
+      <InterviewContent />
+    </InterviewProvider>
+  );
+}

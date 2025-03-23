@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 async function main() {
   const dummyUserId = "user-123";
   const dummyUserName = "John Doe";
+  const dummyClerkId = "dummy_clerk_id_123";
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({
@@ -17,6 +18,7 @@ async function main() {
         id: dummyUserId,
         name: dummyUserName,
         email: "john.doe@example.com", // Optional: Add if you want an email
+        clerkId: dummyClerkId,
       },
     });
     console.log("Created dummy user:", user);

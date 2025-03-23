@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import { 
   generateInterviewQuestions, 
   generateInterviewFeedback, 
   saveInterview, 
   calculateTotalScore 
 } from "../components/api/interviewService";
+import { createUserFromClerk } from "../../actions/action";
 
 export const useInterview = () => {
   const [jobRole, setJobRole] = useState("");
@@ -21,10 +23,35 @@ export const useInterview = () => {
   const [interviewComplete, setInterviewComplete] = useState(false);
   const [savingToDb, setSavingToDb] = useState(false);
   const [savedSessionId, setSavedSessionId] = useState(null);
+  const [dbUserId, setDbUserId] = useState(null);
 
-  // Dummy user ID - in a real app, this would come from authentication
-  const dummyUserId = "user-id-123";
-  const dummyUserName = "John Doe";
+  // Get user from Clerk
+  const { user, isLoaded, isSignedIn } = useUser();
+
+  // Create or get database user when clerk user loads
+  useEffect(() => {
+    const syncUser = async () => {
+      if (isLoaded && isSignedIn && user) {
+        try {
+          const result = await createUserFromClerk({
+            id: user.id,
+            name: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+            email: user.primaryEmailAddress?.emailAddress,
+          });
+          
+          if (result.success) {
+            setDbUserId(result.userId);
+          } else {
+            console.error("Failed to sync user with database:", result.error);
+          }
+        } catch (err) {
+          console.error("Error syncing user:", err);
+        }
+      }
+    };
+    
+    syncUser();
+  }, [isLoaded, isSignedIn, user]);
 
   const startInterview = async () => {
     if (!jobRole.trim()) {
@@ -127,8 +154,26 @@ export const useInterview = () => {
     setSavingToDb(true);
 
     try {
+      if (!dbUserId && isSignedIn) {
+        // If dbUserId is not set yet but user is signed in, try to sync again
+        const result = await createUserFromClerk({
+          id: user.id,
+          name: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+          email: user.primaryEmailAddress?.emailAddress,
+        });
+        
+        if (result.success) {
+          setDbUserId(result.userId);
+        } else {
+          throw new Error("Failed to get user ID from database");
+        }
+      }
+      
+      // Use the database user ID for saving
+      const userId = dbUserId || "anonymous";
+
       const result = await saveInterview(
-        dummyUserId,
+        userId,
         jobRole,
         questions,
         answers,
@@ -180,7 +225,9 @@ export const useInterview = () => {
     interviewComplete,
     savingToDb,
     savedSessionId,
-    dummyUserName,
+    user,
+    isLoaded,
+    isSignedIn,
 
     // Actions
     setJobRole,

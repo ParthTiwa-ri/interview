@@ -1,4 +1,3 @@
-
 "use server";
 
 import { PrismaClient } from "@prisma/client";
@@ -66,6 +65,44 @@ export async function saveInterviewFeedback(data) {
     };
   } catch (error) {
     console.error("Error saving interview feedback:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+}
+
+export async function createUserFromClerk(clerkData) {
+  try {
+    // Check if user already exists based on Clerk ID
+    let user = await prisma.user.findUnique({
+      where: {
+        clerkId: clerkData.id,
+      },
+    });
+    
+    // If user doesn't exist, create a new one
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          name: clerkData.name,
+          email: clerkData.email,
+          clerkId: clerkData.id
+        },
+      });
+      
+      console.log("New user created:", user.id);
+    } else {
+      console.log("Existing user found:", user.id);
+    }
+    
+    return {
+      success: true,
+      userId: user.id,
+      message: "User created/retrieved successfully",
+    };
+  } catch (error) {
+    console.error("Error processing user data:", error);
     return {
       success: false,
       error: error.message,
