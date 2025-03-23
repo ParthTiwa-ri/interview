@@ -206,31 +206,41 @@ export default function InterviewDetailsPage({ params }) {
                     </p>
                   </div>
                   
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="font-semibold text-green-700 mb-2">Strengths:</h3>
-                      {session.questionResponses[activeQuestionIndex].strengths.length > 0 ? (
-                        <ul className="list-disc list-inside space-y-1 text-gray-800">
-                          {session.questionResponses[activeQuestionIndex].strengths.map((str, idx) => (
-                            <li key={idx}>{str}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500 italic">No strengths highlighted</p>
-                      )}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="bg-green-50 rounded-xl p-4">
+                      <h4 className="font-medium text-green-700 mb-2">Strengths</h4>
+                      <ul className="space-y-2">
+                        {session.questionResponses[activeQuestionIndex].strengths.length > 0 ? (
+                          session.questionResponses[activeQuestionIndex].strengths.map((strength, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              </svg>
+                              <span className="text-green-700">{strength}</span>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="text-gray-500 italic">No strengths highlighted</li>
+                        )}
+                      </ul>
                     </div>
-                    
-                    <div>
-                      <h3 className="font-semibold text-red-700 mb-2">Areas to Improve:</h3>
-                      {session.questionResponses[activeQuestionIndex].areasToImprove.length > 0 ? (
-                        <ul className="list-disc list-inside space-y-1 text-gray-800">
-                          {session.questionResponses[activeQuestionIndex].areasToImprove.map((area, idx) => (
-                            <li key={idx}>{area}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500 italic">No areas to improve highlighted</p>
-                      )}
+
+                    <div className="bg-orange-50 rounded-xl p-4">
+                      <h4 className="font-medium text-orange-700 mb-2">Areas to Improve</h4>
+                      <ul className="space-y-2">
+                        {session.questionResponses[activeQuestionIndex].areasToImprove.length > 0 ? (
+                          session.questionResponses[activeQuestionIndex].areasToImprove.map((area, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <svg className="w-5 h-5 text-orange-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              </svg>
+                              <span className="text-orange-700">{area}</span>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="text-gray-500 italic">No areas to improve highlighted</li>
+                        )}
+                      </ul>
                     </div>
                   </div>
                 </>

@@ -41,14 +41,18 @@ const ResultsSummary = () => {
                 <div className="bg-green-50 rounded-xl p-6">
                   <h4 className="text-lg font-semibold text-green-700 mb-3">Key Strengths</h4>
                   <ul className="space-y-2">
-                    {scores.overall.keyStrengths?.map((strength, idx) => (
-                      <li key={idx} className="flex items-start">
-                        <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span className="text-green-700">{strength}</span>
-                      </li>
-                    ))}
+                    {scores.overall.keyStrengths && scores.overall.keyStrengths.length > 0 ? (
+                      scores.overall.keyStrengths.map((strength, idx) => (
+                        <li key={idx} className="flex items-start">
+                          <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-green-700">{strength}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-gray-500 italic">No strengths highlighted</li>
+                    )}
                   </ul>
                 </div>
 
@@ -76,7 +80,7 @@ const ResultsSummary = () => {
               </svg>
               <div>
                 <div className="text-green-700 font-medium">Results saved successfully</div>
-                <div className="text-sm text-green-600">Session ID: {savedSessionId.substring(0, 8)}...</div>
+                {/* <div className="text-sm text-green-600">Session ID: {savedSessionId.substring(0, 8)}...</div> */}
               </div>
             </div>
           )}
@@ -136,14 +140,18 @@ const ResultsSummary = () => {
                         <div className="bg-green-50 rounded-xl p-4">
                           <h4 className="font-medium text-green-700 mb-2">Strengths</h4>
                           <ul className="space-y-2">
-                            {scores[item.id].strengths.map((strength, idx) => (
-                              <li key={idx} className="flex items-start">
-                                <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span className="text-green-700">{strength}</span>
-                              </li>
-                            ))}
+                            {scores.overall.keyStrengths && scores.overall.keyStrengths.length > 0 ? (
+                              scores.overall.keyStrengths.map((strength, idx) => (
+                                <li key={idx} className="flex items-start">
+                                  <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                  <span className="text-green-700">{strength}</span>
+                                </li>
+                              ))
+                            ) : (
+                              <li className="text-gray-500 italic">No strengths highlighted</li>
+                            )}
                           </ul>
                         </div>
 
