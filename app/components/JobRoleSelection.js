@@ -50,7 +50,14 @@ const JobRoleSelection = () => {
                 type="text"
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 value={jobRole}
-                onChange={(e) => setJobRole(e.target.value)}
+                onChange={(e) => {
+                  // Capitalize first letter of each word
+                  const capitalizedText = e.target.value
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+                  setJobRole(capitalizedText);
+                }}
                 placeholder="e.g., Software Engineer, Data Scientist, Product Manager"
               />
             </div>
