@@ -204,7 +204,7 @@ const JobRoleSelection = () => {
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="e.g., Google, Amazon, Microsoft"
               />
-              <p className="mt-1 text-xs text-gray-500">Specifying a company will tailor questions to that company's known interview style</p>
+              <p className="mt-1 text-xs text-gray-500">Specifying a company will tailor questions to that company&apos;s known interview style</p>
             </div>
 
             {error && (

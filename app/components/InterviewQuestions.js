@@ -4,6 +4,9 @@ import { useInterviewContext } from "../context/InterviewContext";
 import AudioRecorder from "./AudioRecorder";
 import FaceDetection from "./FaceDetection";
 import Navbar from "./Navbar";
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const InterviewQuestions = () => {
   const {
@@ -78,12 +81,12 @@ const InterviewQuestions = () => {
               >
                 Start New Interview
               </button> */}
-              <a 
+              <Link 
                 href="/"
                 className="bg-gray-200 hover:bg-gray-200 text-gray-800 font-medium py-2 px-6 rounded-md transition-colors"
               >
                 Go to Home
-              </a>
+              </Link>
             </div>
           </div>
         )}

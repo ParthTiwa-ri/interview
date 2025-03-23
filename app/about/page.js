@@ -19,7 +19,7 @@ export default function AboutPage() {
       <div className="bg-white rounded-xl shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">How It Works</h2>
         <ol className="list-decimal list-inside space-y-3 text-gray-600">
-          <li>Enter the job role you're interviewing for</li>
+          <li>Enter the job role you&apos;re interviewing for</li>
           <li>Receive AI-generated interview questions specific to that role</li>
           <li>Answer the questions as you would in a real interview</li>
           <li>Get detailed feedback and scoring on your responses</li>

@@ -347,7 +347,7 @@ Only return the JSON object, no other text.
             htmlFor="job-role"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Enter the job role you're interviewing for:
+            Enter the job role you&apos;re interviewing for:
           </label>
           <input
             id="job-role"

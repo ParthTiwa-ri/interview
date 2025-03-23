@@ -176,7 +176,7 @@ const HomePage = () => {
                   <p className="text-sm text-gray-500">Software Engineer</p>
                 </div>
               </div>
-              <p className="text-gray-700">"This platform helped me prepare for my technical interviews. The AI feedback was remarkably insightful!"</p>
+              <p className="text-gray-700">&quot;This platform helped me prepare for my technical interviews. The AI feedback was remarkably insightful!&quot;</p>
             </motion.div>
             
             <motion.div
@@ -194,7 +194,7 @@ const HomePage = () => {
                   <p className="text-sm text-gray-500">Product Manager</p>
                 </div>
               </div>
-              <p className="text-gray-700">"I landed my dream job after practicing with InterviewPrep AI. The tailored questions and feedback were game-changers."</p>
+              <p className="text-gray-700">&quot;I landed my dream job after practicing with InterviewPrep AI. The tailored questions and feedback were game-changers.&quot;</p>
             </motion.div>
           </div>
         </div>

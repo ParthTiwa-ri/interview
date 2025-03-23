@@ -133,7 +133,7 @@ export default function InterviewsPage() {
         <div className="bg-white rounded-xl shadow-md p-8 text-center">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">No interviews yet</h2>
           <p className="text-gray-600 mb-6">
-            You haven't completed any interview sessions yet. Start a new interview to see results here.
+            You haven&apos;t completed any interview sessions yet. Start a new interview to see results here.
           </p>
           <Link
             href="/"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { AlertTriangle } from 'lucide-react';
 
 const FaceDetection = ({ onMaxWarningsReached }) => {
@@ -21,6 +21,111 @@ const FaceDetection = ({ onMaxWarningsReached }) => {
   const MAX_WARNINGS = 3;
   const LOOK_AWAY_THRESHOLD = 2000; // 3 seconds threshold for looking away
 
+  // Define triggerWarning first to avoid dependency issues
+  const triggerWarning = useCallback(() => {
+    console.log('Triggering warning');
+    
+    setWarningCount(prevCount => {
+      const newCount = prevCount + 1;
+      console.log(`Warning count increased to ${newCount}`);
+      
+      return newCount;
+    });
+    
+    setShowWarning(true);
+    
+    // Reset looking away state so we can detect it again
+    setIsLookingAway(false);
+    
+    // Hide warning after 3 seconds
+    setTimeout(() => {
+      setShowWarning(false);
+    }, 3000);
+  }, []);
+
+  // Then define startFaceDetection with triggerWarning as dependency
+  const startFaceDetection = useCallback(() => {
+    if (!videoRef.current || !modelsLoaded || !faceapi) return;
+    
+    // Create canvas overlay for detection visualization
+    if (canvasRef.current) {
+      canvasRef.current.width = videoRef.current.videoWidth;
+      canvasRef.current.height = videoRef.current.videoHeight;
+    }
+
+    // Simplify the detection logic for more reliability
+    detectionIntervalRef.current = setInterval(async () => {
+      if (videoRef.current && videoRef.current.readyState === 4) {
+        try {
+          // Detect faces with reduced thresholds for better sensitivity
+          const detections = await faceapi.detectAllFaces(
+            videoRef.current, 
+            new faceapi.TinyFaceDetectorOptions({
+              scoreThreshold: 0.3 // Lower threshold to detect faces more easily
+            })
+          );
+          
+          detectionsRef.current = detections;
+          
+          // Directly check if face is detected
+          const faceDetected = detections.length > 0;
+          console.log(`Face detected: ${faceDetected}`);
+          
+          // Update user attention state
+          if (!faceDetected && !isLookingAway) {
+            // User has started looking away
+            console.log('User is looking away - starting timer');
+            setIsLookingAway(true);
+            
+            // Start timer for look away threshold
+            if (lookAwayTimerRef.current) {
+              clearTimeout(lookAwayTimerRef.current);
+            }
+            
+            lookAwayTimerRef.current = setTimeout(() => {
+              console.log('Look away threshold reached - triggering warning');
+              triggerWarning();
+            }, LOOK_AWAY_THRESHOLD);
+          } else if (faceDetected && isLookingAway) {
+            // User has returned
+            console.log('User returned - canceling timer');
+            setIsLookingAway(false);
+            
+            // Clear the timer
+            if (lookAwayTimerRef.current) {
+              clearTimeout(lookAwayTimerRef.current);
+              lookAwayTimerRef.current = null;
+            }
+          }
+        } catch (error) {
+          console.error("Face detection error:", error);
+        }
+      }
+    }, 300); // Reduce interval for more responsive detection
+  }, [faceapi, isLookingAway, modelsLoaded, triggerWarning]);
+
+  // Now define setupCamera with startFaceDetection as dependency
+  const setupCamera = useCallback(async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "user" } 
+      });
+      
+      setStream(mediaStream);
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        
+        // Wait for video to be ready
+        videoRef.current.addEventListener('play', startFaceDetection);
+      }
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+      setPermissionDenied(true);
+    }
+  }, [startFaceDetection]);
+
+  // Load face-api models
   useEffect(() => {
     // Dynamically import face-api.js
     const loadFaceAPI = async () => {
@@ -68,107 +173,14 @@ const FaceDetection = ({ onMaxWarningsReached }) => {
     };
   }, []);
 
+  // Start camera after models are loaded
   useEffect(() => {
     if (modelsLoaded) {
       setupCamera();
     }
-  }, [modelsLoaded]);
+  }, [modelsLoaded, setupCamera]);
 
-  const setupCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "user" } 
-      });
-      
-      setStream(mediaStream);
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        
-        // Wait for video to be ready
-        videoRef.current.addEventListener('play', startFaceDetection);
-      }
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-      setPermissionDenied(true);
-    }
-  };
-
-  const startFaceDetection = () => {
-    if (!videoRef.current || !modelsLoaded || !faceapi) return;
-    
-    // Create canvas overlay for detection visualization
-    if (canvasRef.current) {
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-    }
-
-    // Simplify the detection logic for more reliability
-    detectionIntervalRef.current = setInterval(async () => {
-      if (videoRef.current && videoRef.current.readyState === 4) {
-        try {
-          // Detect faces with reduced thresholds for better sensitivity
-          const detections = await faceapi.detectAllFaces(
-            videoRef.current, 
-            new faceapi.TinyFaceDetectorOptions({
-              scoreThreshold: 0.3 // Lower threshold to detect faces more easily
-            })
-          );
-          
-          detectionsRef.current = detections;
-          
-          // Draw face detection box for visual feedback
-          // if (canvasRef.current) {
-          //   const displaySize = { 
-          //     width: videoRef.current.videoWidth, 
-          //     height: videoRef.current.videoHeight 
-          //   };
-          //   faceapi.matchDimensions(canvasRef.current, displaySize);
-            
-          //   const resizedDetections = faceapi.resizeResults(detections, displaySize);
-          //   const ctx = canvasRef.current.getContext('2d');
-          //   ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-          //   faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
-          // }
-
-          // Directly check if face is detected
-          const faceDetected = detections.length > 0;
-          console.log(`Face detected: ${faceDetected}`);
-          
-          // Update user attention state
-          if (!faceDetected && !isLookingAway) {
-            // User has started looking away
-            console.log('User is looking away - starting timer');
-            setIsLookingAway(true);
-            
-            // Start timer for look away threshold
-            if (lookAwayTimerRef.current) {
-              clearTimeout(lookAwayTimerRef.current);
-            }
-            
-            lookAwayTimerRef.current = setTimeout(() => {
-              console.log('Look away threshold reached - triggering warning');
-              triggerWarning();
-            }, LOOK_AWAY_THRESHOLD);
-          } else if (faceDetected && isLookingAway) {
-            // User has returned
-            console.log('User returned - canceling timer');
-            setIsLookingAway(false);
-            
-            // Clear the timer
-            if (lookAwayTimerRef.current) {
-              clearTimeout(lookAwayTimerRef.current);
-              lookAwayTimerRef.current = null;
-            }
-          }
-        } catch (error) {
-          console.error("Face detection error:", error);
-        }
-      }
-    }, 300); // Reduce interval for more responsive detection
-  };
-
-  // Add useEffect to handle reaching max warnings
+  // Handle max warnings reached
   useEffect(() => {
     if (warningCount >= MAX_WARNINGS) {
       console.log('Max warnings reached, calling onMaxWarningsReached');
@@ -183,27 +195,6 @@ const FaceDetection = ({ onMaxWarningsReached }) => {
       }
     }
   }, [warningCount, MAX_WARNINGS, onMaxWarningsReached, stream]);
-
-  const triggerWarning = () => {
-    console.log('Triggering warning');
-    
-    setWarningCount(prevCount => {
-      const newCount = prevCount + 1;
-      console.log(`Warning count increased to ${newCount}`);
-      
-      return newCount;
-    });
-    
-    setShowWarning(true);
-    
-    // Reset looking away state so we can detect it again
-    setIsLookingAway(false);
-    
-    // Hide warning after 3 seconds
-    setTimeout(() => {
-      setShowWarning(false);
-    }, 3000);
-  };
 
   // Clean up on unmount
   useEffect(() => {
@@ -227,7 +218,7 @@ const FaceDetection = ({ onMaxWarningsReached }) => {
           <AlertTriangle className="mr-2" />
           <strong>Camera access required</strong>
         </div>
-        <p>Please allow camera access to continue with the interview. The system needs to verify you're not looking away during the interview.</p>
+        <p>Please allow camera access to continue with the interview. The system needs to verify you&apos;re not looking away during the interview.</p>
       </div>
     );
   }
