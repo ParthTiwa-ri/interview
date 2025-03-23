@@ -1,0 +1,50 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String            @id @default(uuid())
+  name           String
+  email          String?           @unique
+  interviewSessions InterviewSession[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@map("users")
+}
+
+model InterviewSession {
+  id             String            @id @default(uuid())
+  jobRole        String
+  totalScore     Float?
+  user           User              @relation(fields: [userId], references: [id])
+  userId         String
+  questionResponses QuestionResponse[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@map("interview_sessions")
+}
+
+model QuestionResponse {
+  id                 String          @id @default(uuid())
+  questionId         String
+  question           String
+  answer             String          @db.Text
+  score              Float?
+  feedback           String?         @db.Text
+  strengths          String[]
+  areasToImprove     String[]
+  interviewSession   InterviewSession @relation(fields: [interviewSessionId], references: [id], onDelete: Cascade)
+  interviewSessionId String
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@map("question_responses")
+}
