@@ -19,7 +19,7 @@ export const generateInterviewQuestions = async (jobRole, experienceLevel = "Mid
       messages: [
         {
           role: "user",
-          content: `Generate 1 realistic mock interview questions for a ${experienceLevel} ${jobRole} position in the ${industry} industry.
+          content: `Generate 1 question realistic mock interview questions for a ${experienceLevel} ${jobRole} position in the ${industry} industry.
 
 The questions should match the real-world expectations for a ${experienceLevel} candidate in this role and industry.
 ${companySpecificContent}
@@ -121,6 +121,7 @@ For each question, rate the answer from 1-10 based on expectations for a ${exper
 - Communication clarity
 - Depth of knowledge appropriate for a ${experienceLevel} ${jobRole}
 - Industry-specific awareness and knowledge
+- mandatory to include the strengths if user answer score rating is 3 or above ("strengths": ["Strength 1", "Strength 2"])
 
 Return a JSON object with the following structure:
 {

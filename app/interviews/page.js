@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { createUserFromClerk, getUserInterviewSessions } from "../../actions/action";
+import { createUserFromClerk, getUserInterviewSessions, deleteInterviewSession } from "../../actions/action";
 
 export default function InterviewsPage() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -11,6 +11,7 @@ export default function InterviewsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dbUserId, setDbUserId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(null);
 
   useEffect(() => {
     const syncUserAndFetchInterviews = async () => {
@@ -51,6 +52,28 @@ export default function InterviewsPage() {
 
     syncUserAndFetchInterviews();
   }, [isLoaded, isSignedIn, user]);
+
+  const deleteInterview = async (sessionId) => {
+    if (confirm("Are you sure you want to delete this interview? This action cannot be undone.")) {
+      setDeleteLoading(sessionId);
+      
+      try {
+        const result = await deleteInterviewSession(sessionId);
+        
+        if (!result.success) {
+          throw new Error(result.error || "Failed to delete interview");
+        }
+        
+        // Update the interviews list without reloading the page
+        setInterviews(interviews.filter(interview => interview.id !== sessionId));
+      } catch (err) {
+        console.error("Error deleting interview:", err);
+        setError(err.message);
+      } finally {
+        setDeleteLoading(null);
+      }
+    }
+  };
 
   if (!isLoaded) {
     return <div className="max-w-4xl mx-auto px-4 py-12">Loading...</div>;
@@ -145,6 +168,20 @@ export default function InterviewsPage() {
                   >
                     View Details →
                   </Link>
+                  <button
+                    onClick={() => deleteInterview(interview.id)}
+                    disabled={deleteLoading === interview.id}
+                    className="text-red-600 hover:text-red-800 disabled:text-red-300"
+                    aria-label="Delete interview"
+                  >
+                    {deleteLoading === interview.id ? (
+                      <span className="inline-block w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin"></span>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>

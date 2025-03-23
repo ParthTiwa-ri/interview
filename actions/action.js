@@ -212,3 +212,35 @@ export async function getInterviewSessionDetails(sessionId) {
     };
   }
 }
+
+export async function deleteInterviewSession(sessionId) {
+  try {
+    if (!sessionId) {
+      return {
+        success: false,
+        error: "Session ID is required"
+      };
+    }
+
+    // Delete the session and its related responses (cascading delete should handle this if set up in schema)
+    await prisma.interviewSession.delete({
+      where: {
+        id: sessionId
+      }
+    });
+
+    // Revalidate the interviews page to show updated list
+    revalidatePath("/interviews");
+
+    return {
+      success: true,
+      message: "Interview session deleted successfully"
+    };
+  } catch (error) {
+    console.error("Error deleting interview session:", error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
