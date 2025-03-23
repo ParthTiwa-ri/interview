@@ -3,49 +3,54 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { createUserFromClerk, getUserInterviewSessions } from "../../actions/action";
 
 export default function InterviewsPage() {
   const { user, isLoaded, isSignedIn } = useUser();
   const [interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dbUserId, setDbUserId] = useState(null);
 
-  // This is a placeholder - in a real app, you'd fetch real interview data from your database
   useEffect(() => {
-    const fetchInterviews = async () => {
+    const syncUserAndFetchInterviews = async () => {
       if (isLoaded && isSignedIn) {
         setLoading(true);
+        setError(null);
         
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Placeholder data - replace with actual API call
-        setInterviews([
-          { 
-            id: "interview-1", 
-            jobRole: "Frontend Developer", 
-            date: "2023-03-15", 
-            score: 7.8 
-          },
-          { 
-            id: "interview-2", 
-            jobRole: "Product Manager", 
-            date: "2023-03-10", 
-            score: 8.2 
-          },
-          { 
-            id: "interview-3", 
-            jobRole: "UX Designer", 
-            date: "2023-03-05", 
-            score: 6.9 
-          },
-        ]);
-        
-        setLoading(false);
+        try {
+          // First, make sure user exists in our database
+          const userResult = await createUserFromClerk({
+            id: user.id,
+            name: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+            email: user.primaryEmailAddress?.emailAddress,
+          });
+          
+          if (!userResult.success) {
+            throw new Error(userResult.error || "Failed to sync user");
+          }
+          
+          setDbUserId(userResult.userId);
+          
+          // Then fetch the user's interviews
+          const interviewsResult = await getUserInterviewSessions(userResult.userId);
+          
+          if (!interviewsResult.success) {
+            throw new Error(interviewsResult.error || "Failed to fetch interviews");
+          }
+          
+          setInterviews(interviewsResult.sessions);
+        } catch (err) {
+          console.error("Error fetching interviews:", err);
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
-    fetchInterviews();
-  }, [isLoaded, isSignedIn]);
+    syncUserAndFetchInterviews();
+  }, [isLoaded, isSignedIn, user]);
 
   if (!isLoaded) {
     return <div className="max-w-4xl mx-auto px-4 py-12">Loading...</div>;
@@ -82,6 +87,12 @@ export default function InterviewsPage() {
         </Link>
       </div>
 
+      {error && (
+        <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-6">
+          Error: {error}
+        </div>
+      )}
+
       {loading ? (
         <div className="bg-white rounded-xl shadow-md p-6 text-center">
           <div className="animate-pulse flex space-x-4">
@@ -115,16 +126,18 @@ export default function InterviewsPage() {
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-800">{interview.jobRole}</h2>
-                  <p className="text-gray-500">{new Date(interview.date).toLocaleDateString()}</p>
+                  <p className="text-gray-500">
+                    {new Date(interview.createdAt).toLocaleDateString()} • {interview.questionCount} questions
+                  </p>
                 </div>
                 <div className="flex items-center space-x-4">
                   <div 
                     className={`text-white font-medium px-3 py-1 rounded-full ${
-                      interview.score >= 8 ? 'bg-green-500' : 
-                      interview.score >= 6 ? 'bg-yellow-500' : 'bg-red-500'
+                      interview.totalScore >= 8 ? 'bg-green-500' : 
+                      interview.totalScore >= 6 ? 'bg-yellow-500' : 'bg-red-500'
                     }`}
                   >
-                    Score: {interview.score}
+                    Score: {interview.totalScore}
                   </div>
                   <Link
                     href={`/interviews/${interview.id}`}

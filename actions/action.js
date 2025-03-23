@@ -109,3 +109,104 @@ export async function createUserFromClerk(clerkData) {
     };
   }
 }
+
+export async function getUserInterviewSessions(userId) {
+  try {
+    if (!userId) {
+      return {
+        success: false,
+        error: "User ID is required"
+      };
+    }
+
+    const sessions = await prisma.interviewSession.findMany({
+      where: {
+        userId: userId
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      include: {
+        _count: {
+          select: { questionResponses: true }
+        }
+      }
+    });
+
+    return {
+      success: true,
+      sessions: sessions.map(session => ({
+        id: session.id,
+        jobRole: session.jobRole,
+        totalScore: session.totalScore,
+        createdAt: session.createdAt,
+        questionCount: session._count.questionResponses
+      }))
+    };
+  } catch (error) {
+    console.error("Error fetching interview sessions:", error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+export async function getInterviewSessionDetails(sessionId) {
+  try {
+    if (!sessionId) {
+      return {
+        success: false,
+        error: "Session ID is required"
+      };
+    }
+
+    const session = await prisma.interviewSession.findUnique({
+      where: {
+        id: sessionId
+      },
+      include: {
+        questionResponses: true,
+        user: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+
+    if (!session) {
+      return {
+        success: false,
+        error: "Interview session not found"
+      };
+    }
+
+    return {
+      success: true,
+      session: {
+        id: session.id,
+        jobRole: session.jobRole,
+        totalScore: session.totalScore,
+        createdAt: session.createdAt,
+        userName: session.user.name,
+        questionResponses: session.questionResponses.map(qr => ({
+          id: qr.id,
+          questionId: qr.questionId,
+          question: qr.question,
+          answer: qr.answer,
+          score: qr.score,
+          feedback: qr.feedback,
+          strengths: qr.strengths,
+          areasToImprove: qr.areasToImprove
+        }))
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching interview session details:", error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
