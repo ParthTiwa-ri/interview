@@ -1,18 +1,21 @@
-import { wakeDatabaseServer } from "../../../lib/wakeDatabaseServer";
-import { NextResponse } from "next/server";
+import { prisma } from "../../../lib/db";
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    // Use the server-side wake function with retries
-    const success = await wakeDatabaseServer();
+    // Direct database query without using wakeDatabaseServer
+    await prisma.$queryRaw`SELECT 1`;
     
-    if (success) {
-      return NextResponse.json({ success: true, message: "Database connection established" }, { status: 200 });
-    } else {
-      return NextResponse.json({ success: false, message: "Failed to connect to database after multiple attempts" }, { status: 500 });
-    }
+    return NextResponse.json({
+      success: true,
+      message: 'Database connection established'
+    });
   } catch (error) {
-    console.error("Unexpected error in wake-database endpoint:", error);
-    return NextResponse.json({ success: false, message: "Unexpected error occurred" }, { status: 500 });
+    console.error('Error in wake-database API route:', error);
+    
+    return NextResponse.json({
+      success: false,
+      message: 'Error while trying to wake database'
+    }, { status: 500 });
   }
 } 

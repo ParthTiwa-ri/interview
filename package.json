@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "restart": "rm -rf .next && next dev"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.12.8",

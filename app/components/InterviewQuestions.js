@@ -21,7 +21,8 @@ const InterviewQuestions = () => {
     error,
     maxWarningsReached,
     testTerminated,
-    handleMaxWarningsReached
+    handleMaxWarningsReached,
+    resetInterview
   } = useInterviewContext();
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -69,6 +70,21 @@ const InterviewQuestions = () => {
             <p>Your interview has been terminated because you looked away from the screen too many times. 
               Please ensure you are fully focused during interviews.</p>
             <p className="mt-2">You can restart the interview process from the beginning.</p>
+            
+            <div className="mt-6 flex gap-4">
+              {/* <button 
+                onClick={resetInterview}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition-colors"
+              >
+                Start New Interview
+              </button> */}
+              <a 
+                href="/"
+                className="bg-gray-200 hover:bg-gray-200 text-gray-800 font-medium py-2 px-6 rounded-md transition-colors"
+              >
+                Go to Home
+              </a>
+            </div>
           </div>
         )}
 
@@ -90,6 +106,9 @@ const InterviewQuestions = () => {
                 </h3>
 
                 <div className="space-y-6">
+                  {/* <div className="text-xs text-gray-500 mb-2">
+                    Note: You can look at your keyboard while typing/speaking, but try to face the camera when possible.
+                  </div> */}
                   <AudioRecorder
                     questionId={currentQuestion.id}
                     onAnswerChange={handleAnswerChange}

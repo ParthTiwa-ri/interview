@@ -19,7 +19,7 @@ const FaceDetection = ({ onMaxWarningsReached }) => {
   const detectionIntervalRef = useRef(null);
   
   const MAX_WARNINGS = 3;
-  const LOOK_AWAY_THRESHOLD = 3000; // 3 seconds threshold for looking away
+  const LOOK_AWAY_THRESHOLD = 2000; // 3 seconds threshold for looking away
 
   useEffect(() => {
     const loadModels = async () => {
@@ -103,18 +103,18 @@ const FaceDetection = ({ onMaxWarningsReached }) => {
           detectionsRef.current = detections;
           
           // Draw face detection box for visual feedback
-          if (canvasRef.current) {
-            const displaySize = { 
-              width: videoRef.current.videoWidth, 
-              height: videoRef.current.videoHeight 
-            };
-            faceapi.matchDimensions(canvasRef.current, displaySize);
+          // if (canvasRef.current) {
+          //   const displaySize = { 
+          //     width: videoRef.current.videoWidth, 
+          //     height: videoRef.current.videoHeight 
+          //   };
+          //   faceapi.matchDimensions(canvasRef.current, displaySize);
             
-            const resizedDetections = faceapi.resizeResults(detections, displaySize);
-            const ctx = canvasRef.current.getContext('2d');
-            ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-            faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
-          }
+          //   const resizedDetections = faceapi.resizeResults(detections, displaySize);
+          //   const ctx = canvasRef.current.getContext('2d');
+          //   ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          //   faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
+          // }
 
           // Directly check if face is detected
           const faceDetected = detections.length > 0;

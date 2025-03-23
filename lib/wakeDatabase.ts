@@ -3,8 +3,8 @@
  * This should be called as early as possible when the app starts
  * Includes retry mechanism for better reliability
  */
-export const wakeDatabase = async (retries = 3, delay = 2000) => {
-  let lastError;
+export const wakeDatabase = async (retries = 3, delay = 2000): Promise<boolean> => {
+  let lastError: Error | unknown;
 
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
