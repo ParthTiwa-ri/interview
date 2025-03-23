@@ -3,9 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { 
-  UserButton, 
-  SignInButton, 
-  SignUpButton,
+  UserButton,
   useUser
 } from "@clerk/nextjs";
 
@@ -48,16 +46,16 @@ const Navbar = () => {
           <div className="flex items-center">
             {!isSignedIn ? (
               <div className="flex space-x-4">
-                <SignInButton mode="modal">
+                <Link href="/sign-in">
                   <button className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                     Sign in
                   </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
+                </Link>
+                <Link href="/sign-up">
                   <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
                     Sign up
                   </button>
-                </SignUpButton>
+                </Link>
               </div>
             ) : (
               <div className="flex items-center">
@@ -149,16 +147,16 @@ const Navbar = () => {
           <div className="flex items-center px-4">
             {!isSignedIn ? (
               <div className="flex flex-col space-y-2">
-                <SignInButton mode="modal">
+                <Link href="/sign-in">
                   <button className="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">
                     Sign in
                   </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
+                </Link>
+                <Link href="/sign-up">
                   <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium">
                     Sign up
                   </button>
-                </SignUpButton>
+                </Link>
               </div>
             ) : (
               <div className="flex items-center">
