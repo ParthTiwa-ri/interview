@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { AlertTriangle } from 'lucide-react';
-import * as faceapi from 'face-api.js';
 
 const FaceDetection = ({ onMaxWarningsReached }) => {
   const videoRef = useRef(null);
@@ -13,6 +12,7 @@ const FaceDetection = ({ onMaxWarningsReached }) => {
   const [showWarning, setShowWarning] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [faceapi, setFaceapi] = useState(null);
   
   const lookAwayTimerRef = useRef(null);
   const detectionsRef = useRef([]);
@@ -22,16 +22,31 @@ const FaceDetection = ({ onMaxWarningsReached }) => {
   const LOOK_AWAY_THRESHOLD = 2000; // 3 seconds threshold for looking away
 
   useEffect(() => {
+    // Dynamically import face-api.js
+    const loadFaceAPI = async () => {
+      try {
+        const faceApiModule = await import('face-api.js');
+        setFaceapi(faceApiModule);
+        return faceApiModule;
+      } catch (error) {
+        console.error('Error importing face-api.js:', error);
+        return null;
+      }
+    };
+
     const loadModels = async () => {
       try {
+        const faceApiModule = await loadFaceAPI();
+        if (!faceApiModule) return;
+        
         // Path to models - you may need to update this based on your project structure
         const MODEL_URL = '/models';
         
         // Load required face-api models
         await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+          faceApiModule.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceApiModule.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceApiModule.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
         ]);
         
         setModelsLoaded(true);
@@ -80,7 +95,7 @@ const FaceDetection = ({ onMaxWarningsReached }) => {
   };
 
   const startFaceDetection = () => {
-    if (!videoRef.current || !modelsLoaded) return;
+    if (!videoRef.current || !modelsLoaded || !faceapi) return;
     
     // Create canvas overlay for detection visualization
     if (canvasRef.current) {
