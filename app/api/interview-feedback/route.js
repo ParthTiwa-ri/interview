@@ -1,7 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../../lib/db";
 import { NextResponse } from "next/server";
 
-const prisma = new PrismaClient();
+// Add runtime configuration for API route
+export const runtime = 'nodejs';
 
 export async function POST(request) {
   try {

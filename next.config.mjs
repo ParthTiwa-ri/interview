@@ -27,6 +27,9 @@ const nextConfig = {
   },
   // Disable strict mode in development to prevent duplicate logs
   reactStrictMode: false,
+  
+  // Add Prisma to external packages for server-side rendering
+  serverExternalPackages: ['@prisma/client', 'prisma']
 };
 
 export default nextConfig;
