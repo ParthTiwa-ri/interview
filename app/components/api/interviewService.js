@@ -13,7 +13,7 @@ export const generateInterviewQuestions = async (jobRole) => {
       messages: [
         {
           role: "user",
-          content: `Generate 2 mock interview questions for a ${jobRole} position. 
+          content: `Generate 1 mock interview questions for a ${jobRole} position. 
           
           
     Format your response EXACTLY as a JSON array with each object having 'id' and 'question' fields like this example:
