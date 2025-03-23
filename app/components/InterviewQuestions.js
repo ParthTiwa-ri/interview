@@ -2,6 +2,7 @@
 
 import { useInterviewContext } from "../context/InterviewContext";
 import AudioRecorder from "./AudioRecorder";
+import FaceDetection from "./FaceDetection";
 import Navbar from "./Navbar";
 
 const InterviewQuestions = () => {
@@ -17,7 +18,10 @@ const InterviewQuestions = () => {
     scoreAllAnswers,
     scoringLoading,
     savingToDb,
-    error
+    error,
+    maxWarningsReached,
+    testTerminated,
+    handleMaxWarningsReached
   } = useInterviewContext();
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -40,7 +44,7 @@ const InterviewQuestions = () => {
           <div className="flex items-center space-x-4">
             <button
               onClick={previousQuestion}
-              disabled={currentQuestionIndex === 0}
+              disabled={currentQuestionIndex === 0 || testTerminated}
               className="px-4 py-2 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -49,7 +53,7 @@ const InterviewQuestions = () => {
             </button>
             <button
               onClick={nextQuestion}
-              disabled={!answers[currentQuestion.id]?.trim()}
+              disabled={!answers[currentQuestion.id]?.trim() || testTerminated}
               className="px-4 py-2 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -59,38 +63,53 @@ const InterviewQuestions = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-blue-600 font-semibold">{currentQuestionIndex + 1}</span>
-              </div>
+        {testTerminated && (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-xl mb-8">
+            <h3 className="text-xl font-bold mb-2">Interview Terminated</h3>
+            <p>Your interview has been terminated because you looked away from the screen too many times. 
+              Please ensure you are fully focused during interviews.</p>
+            <p className="mt-2">You can restart the interview process from the beginning.</p>
+          </div>
+        )}
+
+        {!testTerminated && (
+          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 relative">
+            <div className="absolute top-0 right-0 mt-2 mr-2">
+              <FaceDetection onMaxWarningsReached={handleMaxWarningsReached} />
             </div>
-            <div className="flex-grow">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">
-                {currentQuestion.question}
-              </h3>
+            
+            <div className="flex items-start space-x-4 pr-28">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 font-semibold">{currentQuestionIndex + 1}</span>
+                </div>
+              </div>
+              <div className="flex-grow">
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                  {currentQuestion.question}
+                </h3>
 
-              <div className="space-y-6">
-                <AudioRecorder
-                  questionId={currentQuestion.id}
-                  onAnswerChange={handleAnswerChange}
-                />
+                <div className="space-y-6">
+                  <AudioRecorder
+                    questionId={currentQuestion.id}
+                    onAnswerChange={handleAnswerChange}
+                  />
 
-                {answers[currentQuestion.id] && (
-                  <div className="mt-6">
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="text-sm font-medium text-gray-700 mb-2">Your Answer:</div>
-                      <p className="text-gray-900 whitespace-pre-wrap">{answers[currentQuestion.id]}</p>
+                  {answers[currentQuestion.id] && (
+                    <div className="mt-6">
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-sm font-medium text-gray-700 mb-2">Your Answer:</div>
+                        <p className="text-gray-900 whitespace-pre-wrap">{answers[currentQuestion.id]}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {interviewComplete && (
+        {interviewComplete && !testTerminated && (
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">Review Your Answers</h3>
 

@@ -19,7 +19,7 @@ export const generateInterviewQuestions = async (jobRole, experienceLevel = "Mid
       messages: [
         {
           role: "user",
-          content: `Generate 1 question realistic mock interview questions for a ${experienceLevel} ${jobRole} position in the ${industry} industry.
+          content: `Generate only 2 question realistic mock interview questions for a ${experienceLevel} ${jobRole} position in the ${industry} industry.
 
 The questions should match the real-world expectations for a ${experienceLevel} candidate in this role and industry.
 ${companySpecificContent}

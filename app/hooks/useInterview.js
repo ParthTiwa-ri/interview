@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { 
   generateInterviewQuestions, 
@@ -24,6 +24,8 @@ export const useInterview = () => {
   const [savingToDb, setSavingToDb] = useState(false);
   const [savedSessionId, setSavedSessionId] = useState(null);
   const [dbUserId, setDbUserId] = useState(null);
+  const [maxWarningsReached, setMaxWarningsReached] = useState(false);
+  const [testTerminated, setTestTerminated] = useState(false);
 
   // Get user from Clerk
   const { user, isLoaded, isSignedIn } = useUser();
@@ -234,6 +236,13 @@ export const useInterview = () => {
     return calculateTotalScore(questions, scores);
   };
 
+  // Use useCallback to memoize this function so it doesn't cause renders
+  const handleMaxWarningsReached = useCallback(() => {
+    setMaxWarningsReached(true);
+    setTestTerminated(true);
+    setError("Interview terminated due to too many attention warnings. Please focus during the interview.");
+  }, []);
+
   return {
     // State
     jobRole,
@@ -248,6 +257,8 @@ export const useInterview = () => {
     interviewComplete,
     savingToDb,
     savedSessionId,
+    maxWarningsReached,
+    testTerminated,
     user,
     isLoaded,
     isSignedIn,
@@ -260,6 +271,7 @@ export const useInterview = () => {
     previousQuestion,
     scoreAllAnswers,
     resetInterview,
-    getTotalScore
+    getTotalScore,
+    handleMaxWarningsReached,
   };
 }; 
